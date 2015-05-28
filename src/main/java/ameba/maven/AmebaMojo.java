@@ -1,4 +1,4 @@
-package org.amebastack.maven;
+package ameba.maven;
 
 import ameba.core.Application;
 import ameba.db.OrmFeature;
@@ -13,6 +13,7 @@ import ameba.dev.classloading.enhancers.EnhancingException;
 import ameba.util.ClassUtils;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+import com.google.common.collect.Sets;
 import javassist.ClassPool;
 import javassist.CtClass;
 import org.apache.commons.io.FileUtils;
@@ -28,11 +29,15 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * @goal enhance
  * @requiresProject true
+ * @requiresDependencyResolution compile
  * @phase process-classes
  * @execute phase="process-classes"
  */
@@ -61,7 +66,7 @@ public class AmebaMojo extends AbstractMojo {
      */
     private String classSource;
     /**
-     * Set the directory holding the class files we want to transform.
+     * Set the application config ids.
      *
      * @parameter
      */
@@ -163,6 +168,10 @@ public class AmebaMojo extends AbstractMojo {
         String name = file.replace("/", ".");
         name = name.substring(0, name.length() - 6);
         ClassDescription desc = classLoader.getClassCache().get(name);
+        enhance(desc);
+    }
+
+    private void enhance(ClassDescription desc) {
         if (desc == null) return;
         ClassPool classPool = Enhancer.getClassPool();
         CtClass clazz;
@@ -207,25 +216,19 @@ public class AmebaMojo extends AbstractMojo {
 
         URL[] urls = buildClassPath();
         ClassLoader loader = URLClassLoader.newInstance(urls, Thread.currentThread().getContextClassLoader());
-        ReloadClassLoader classLoader = new ReloadClassLoader(loader, app);
+        ReloadClassLoader classLoader = new MojoClassLoader(loader, app);
         app.setClassLoader(classLoader);
         return classLoader;
     }
 
     private URL[] buildClassPath() {
         try {
-            List<URL> urls = new ArrayList<URL>();
+            Set<URL> urls = Sets.newLinkedHashSet();
 
             URL projectOut = new File(project.getBuild().getOutputDirectory()).toURI().toURL();
             urls.add(projectOut);
 
             Set<Artifact> artifacts = project.getArtifacts();
-
-            for (Artifact a : artifacts) {
-                urls.add(a.getFile().toURI().toURL());
-            }
-
-            artifacts = project.getDependencyArtifacts();
 
             for (Artifact a : artifacts) {
                 urls.add(a.getFile().toURI().toURL());
@@ -242,6 +245,18 @@ public class AmebaMojo extends AbstractMojo {
 
     private static class MavenApp extends Application {
         public MavenApp() {
+        }
+    }
+
+    private class MojoClassLoader extends ReloadClassLoader {
+
+        public MojoClassLoader(ClassLoader parent, Application app) {
+            super(parent, app);
+        }
+        
+        @Override
+        protected void enhanceClass(ClassDescription desc) {
+            enhance(desc);
         }
     }
 }
