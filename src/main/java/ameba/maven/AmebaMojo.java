@@ -51,15 +51,6 @@ public class AmebaMojo extends AbstractMojo {
      */
     private MavenProject project;
     /**
-     * Set the destination directory where we will put the transformed classes.
-     * <p>
-     * This is commonly the same as the classSource directory.
-     * </p>
-     *
-     * @parameter
-     */
-    private String classDestination;
-    /**
      * Set the directory holding the class files we want to transform.
      *
      * @parameter default-value="${project.build.outputDirectory}"
@@ -80,9 +71,6 @@ public class AmebaMojo extends AbstractMojo {
             classSource = "target/classes";
         }
 
-        if (classDestination == null) {
-            classDestination = classSource;
-        }
         Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
         logger.setLevel(Level.OFF);
 
@@ -147,7 +135,7 @@ public class AmebaMojo extends AbstractMojo {
                         getLog().debug("Expecting a .class file but got " + fileName + " ... ignoring");
 
                     } else if (fileName.endsWith(".class")) {
-                        String name = file.getPath().replace(classSource, "");
+                        String name = file.getPath().substring(classSource.length());
                         transformFile(name);
                     }
                 }
@@ -162,10 +150,10 @@ public class AmebaMojo extends AbstractMojo {
     }
 
     private void transformFile(String file) {
-        if (file.startsWith("/")) {
+        if (file.startsWith(File.separator)) {
             file = file.substring(1);
         }
-        String name = file.replace("/", ".");
+        String name = file.replace(File.separator, ".");
         name = name.substring(0, name.length() - 6);
         ClassDescription desc = classLoader.getClassCache().get(name);
         enhance(desc);
@@ -253,7 +241,7 @@ public class AmebaMojo extends AbstractMojo {
         public MojoClassLoader(ClassLoader parent, Application app) {
             super(parent, app);
         }
-        
+
         @Override
         protected void enhanceClass(ClassDescription desc) {
             enhance(desc);
