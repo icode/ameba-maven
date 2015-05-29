@@ -1,10 +1,6 @@
 package ameba.maven;
 
 import ameba.core.Application;
-import ameba.db.OrmFeature;
-import ameba.db.ebean.EbeanFinder;
-import ameba.db.ebean.EbeanPersister;
-import ameba.db.ebean.EbeanUpdater;
 import ameba.dev.Enhancing;
 import ameba.dev.classloading.ClassDescription;
 import ameba.dev.classloading.ReloadClassLoader;
@@ -64,6 +60,7 @@ public class AmebaMojo extends AbstractMojo {
     private String[] ids;
     private ReloadClassLoader classLoader;
 
+    @SuppressWarnings("unchecked")
     public void execute()
             throws MojoExecutionException {
         final Log log = getLog();
@@ -85,7 +82,7 @@ public class AmebaMojo extends AbstractMojo {
         classLoader = buildClassLoader(app);
         Thread.currentThread().setContextClassLoader(classLoader);
 
-        Map<String, Object> config = new LinkedHashMap<String, Object>();
+        Map<String, Object> config = app.getSrcProperties();
         Properties properties = Application.readDefaultConfig(config);
         Application.readAppConfig(properties, Application.DEFAULT_APP_CONF);
         if (ids != null) {
@@ -95,12 +92,11 @@ public class AmebaMojo extends AbstractMojo {
             }
         }
 
-        //todo 更改为配置的，不是固定class
-        OrmFeature.setFinderClass(EbeanFinder.class);
-        OrmFeature.setPersisterClass(EbeanPersister.class);
-        OrmFeature.setUpdaterClass(EbeanUpdater.class);
+        config.putAll((Map)properties);
 
         Application.readModuleConfig(config, false);
+
+        app.addOnSetup(config);
 
         Enhancing.loadEnhancers(config);
 
@@ -233,6 +229,11 @@ public class AmebaMojo extends AbstractMojo {
 
     private static class MavenApp extends Application {
         public MavenApp() {
+        }
+
+        @Override
+        protected void addOnSetup(Map<String, Object> configMap) {
+            super.addOnSetup(configMap);
         }
     }
 
