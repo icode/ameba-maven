@@ -67,8 +67,9 @@ public class AmebaMojo extends AbstractMojo {
             classSource = "target/classes";
         }
 
-        Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        logger.setLevel(Level.OFF);
+        org.slf4j.Logger logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        if (logger instanceof Logger)
+            ((Logger) logger).setLevel(Level.OFF);
 
         log.info("Enhancing classes ...");
 
