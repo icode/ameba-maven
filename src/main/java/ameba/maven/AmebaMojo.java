@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -92,7 +91,7 @@ public class AmebaMojo extends AbstractMojo {
             }
         }
 
-        config.putAll((Map)properties);
+        config.putAll((Map) properties);
 
         Application.readModuleConfig(config, false);
 
