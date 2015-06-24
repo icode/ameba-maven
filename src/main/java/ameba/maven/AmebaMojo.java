@@ -13,6 +13,7 @@ import com.google.common.collect.Sets;
 import javassist.ClassPool;
 import javassist.CtClass;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -64,7 +65,7 @@ public class AmebaMojo extends AbstractMojo {
             throws MojoExecutionException {
         final Log log = getLog();
         if (classSource == null) {
-            classSource = "target/classes";
+            classSource = project.getBuild().getOutputDirectory();
         }
 
         org.slf4j.Logger logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
@@ -76,8 +77,11 @@ public class AmebaMojo extends AbstractMojo {
         File f = new File("");
         log.info("Current Directory: " + f.getAbsolutePath());
         MavenApp app = new MavenApp();
+        String encoding = (String) project.getProperties().get("project.build.sourceEncoding");
+        if (StringUtils.isBlank(encoding)) encoding = "utf-8";
+        app.property("app.encoding", encoding);
         app.setSourceRoot(f.getAbsoluteFile());
-        app.setPackageRoot(new File(JAVA_PKG).getAbsoluteFile());
+        app.setPackageRoot(new File(project.getBuild().getSourceDirectory()).getAbsoluteFile());
         ClassLoader oldClassLoader = ClassUtils.getContextClassLoader();
         classLoader = buildClassLoader(app);
         Thread.currentThread().setContextClassLoader(classLoader);
@@ -98,7 +102,7 @@ public class AmebaMojo extends AbstractMojo {
 
         app.addOnSetup(config);
 
-        Enhancing.loadEnhancers(config);
+        Enhancing.loadEnhancers(config, app);
 
         process("", true);
         Thread.currentThread().setContextClassLoader(oldClassLoader);
