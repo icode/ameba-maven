@@ -87,7 +87,7 @@ public class AmebaMojo extends AbstractMojo {
         Thread.currentThread().setContextClassLoader(classLoader);
 
         Map<String, Object> config = app.getSrcProperties();
-        Properties properties = Application.readDefaultConfig(config);
+        Properties properties = Application.readDefaultConfig();
         Application.readAppConfig(properties, Application.DEFAULT_APP_CONF);
         if (ids != null) {
             Set<String> configFiles = Application.parseIds2ConfigFile(ids);
@@ -96,9 +96,9 @@ public class AmebaMojo extends AbstractMojo {
             }
         }
 
-        config.putAll((Map) properties);
+        Application.readModuleConfig(properties, false);
 
-        Application.readModuleConfig(config, false);
+        config.putAll((Map) properties);
 
         app.addOnSetup(config);
 

@@ -1,4 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.amebastack.maven</groupId>
@@ -146,6 +146,7 @@
             <groupId>org.amebastack</groupId>
             <artifactId>ameba</artifactId>
             <version>${ameba.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
@@ -184,7 +185,7 @@
         </dependency>
     </dependencies>
     <properties>
-        <ameba.dev.version>0.1.7.Alpha1</ameba.dev.version>
-        <ameba.version>0.1.7.Alpha1</ameba.version>
+        <ameba.dev.version>0.1.7.Alpha2</ameba.dev.version>
+        <ameba.version>0.1.7-SNAPSHOT</ameba.version>
     </properties>
 </project>
