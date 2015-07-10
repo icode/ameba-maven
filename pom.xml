@@ -146,7 +146,6 @@
             <groupId>org.amebastack</groupId>
             <artifactId>ameba</artifactId>
             <version>${ameba.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
