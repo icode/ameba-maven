@@ -38,7 +38,6 @@ import java.util.Set;
  * @execute phase="process-classes"
  */
 public class AmebaMojo extends AbstractMojo {
-    private final static String JAVA_PKG = "src/main/java";
     /**
      * The maven project.
      *
