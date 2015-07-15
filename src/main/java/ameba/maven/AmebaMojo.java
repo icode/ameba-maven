@@ -7,8 +7,6 @@ import ameba.dev.classloading.ReloadClassLoader;
 import ameba.dev.classloading.enhancers.Enhancer;
 import ameba.dev.classloading.enhancers.EnhancingException;
 import ameba.util.ClassUtils;
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
 import com.google.common.collect.Sets;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -19,7 +17,6 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -67,10 +64,6 @@ public class AmebaMojo extends AbstractMojo {
         if (classSource == null) {
             classSource = project.getBuild().getOutputDirectory();
         }
-
-        org.slf4j.Logger logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        if (logger instanceof Logger)
-            ((Logger) logger).setLevel(Level.OFF);
 
         log.info("Enhancing classes ...");
 
