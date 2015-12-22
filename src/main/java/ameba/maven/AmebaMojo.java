@@ -7,8 +7,6 @@ import ameba.dev.classloading.ReloadClassLoader;
 import ameba.dev.classloading.enhancers.Enhancer;
 import ameba.dev.classloading.enhancers.EnhancingException;
 import ameba.util.ClassUtils;
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
 import com.google.common.collect.Sets;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -19,7 +17,6 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -57,6 +54,12 @@ public class AmebaMojo extends AbstractMojo {
      * @parameter
      */
     private String[] ids;
+    /**
+     * Set the read application config file.
+     *
+     * @parameter
+     */
+    private boolean readAppConf = false;
     private ReloadClassLoader classLoader;
 
     @SuppressWarnings("unchecked")
@@ -67,41 +70,33 @@ public class AmebaMojo extends AbstractMojo {
             classSource = project.getBuild().getOutputDirectory();
         }
 
-        org.slf4j.Logger logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        if (logger instanceof Logger)
-            ((Logger) logger).setLevel(Level.OFF);
-
         log.info("Enhancing classes ...");
 
         File f = new File("");
         log.info("Current Directory: " + f.getAbsolutePath());
-        MavenApp app = new MavenApp();
-        String encoding = (String) project.getProperties().get("project.build.sourceEncoding");
-        if (StringUtils.isBlank(encoding)) encoding = "utf-8";
-        app.property("app.encoding", encoding);
-        app.setSourceRoot(f.getAbsoluteFile());
-        app.setPackageRoot(new File(project.getBuild().getSourceDirectory()).getAbsoluteFile());
         ClassLoader oldClassLoader = ClassUtils.getContextClassLoader();
-        classLoader = buildClassLoader(app);
+        classLoader = buildClassLoader(new File(project.getBuild().getSourceDirectory()).getAbsoluteFile());
         Thread.currentThread().setContextClassLoader(classLoader);
 
-        Map<String, Object> config = app.getSrcProperties();
         Properties properties = Application.readDefaultConfig();
-        Application.readAppConfig(properties, Application.DEFAULT_APP_CONF);
-        if (ids != null) {
-            Set<String> configFiles = Application.parseIds2ConfigFile(ids);
-            for (String conf : configFiles) {
-                Application.readAppConfig(properties, conf);
+        if (readAppConf) {
+            Application.readAppConfig(properties, Application.DEFAULT_APP_CONF);
+            if (ids != null && ids.length > 0) {
+                Set<String> configFiles = Application.parseIds2ConfigFile(ids);
+                for (String conf : configFiles) {
+                    Application.readAppConfig(properties, conf);
+                }
             }
         }
 
         Application.readModuleConfig(properties, false);
 
-        config.putAll((Map) properties);
+        String encoding = (String) project.getProperties().get("project.build.sourceEncoding");
+        if (StringUtils.isBlank(encoding)) encoding = "utf-8";
+        properties.setProperty("app.encoding", encoding);
+        properties.setProperty("ebean.enhancer.log.level", "0");
 
-        app.addOnSetup(config);
-
-        Enhancing.loadEnhancers(config, app);
+        Enhancing.loadEnhancers((Map) properties);
 
         process("", true);
         Thread.currentThread().setContextClassLoader(oldClassLoader);
@@ -199,13 +194,11 @@ public class AmebaMojo extends AbstractMojo {
         }
     }
 
-    private ReloadClassLoader buildClassLoader(Application app) {
+    private ReloadClassLoader buildClassLoader(File pkgRoot) {
 
         URL[] urls = buildClassPath();
         ClassLoader loader = URLClassLoader.newInstance(urls, Thread.currentThread().getContextClassLoader());
-        ReloadClassLoader classLoader = new MojoClassLoader(loader, app);
-        app.setClassLoader(classLoader);
-        return classLoader;
+        return new MojoClassLoader(loader, pkgRoot);
     }
 
     private URL[] buildClassPath() {
@@ -221,7 +214,7 @@ public class AmebaMojo extends AbstractMojo {
                 urls.add(a.getFile().toURI().toURL());
             }
 
-            getLog().info("ClassPath URLs: " + urls);
+            getLog().debug("ClassPath URLs: " + urls);
 
             return urls.toArray(new URL[urls.size()]);
 
@@ -242,8 +235,8 @@ public class AmebaMojo extends AbstractMojo {
 
     private class MojoClassLoader extends ReloadClassLoader {
 
-        public MojoClassLoader(ClassLoader parent, Application app) {
-            super(parent, app);
+        protected MojoClassLoader(ClassLoader parent, File pkgRoot) {
+            super(parent, pkgRoot);
         }
 
         @Override
