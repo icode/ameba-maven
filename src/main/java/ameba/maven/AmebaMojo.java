@@ -17,6 +17,7 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
+import org.slf4j.impl.StaticLoggerBinder;
 
 import java.io.File;
 import java.io.IOException;
@@ -66,11 +67,10 @@ public class AmebaMojo extends AbstractMojo {
     public void execute()
             throws MojoExecutionException {
         final Log log = getLog();
+        StaticLoggerBinder.getSingleton().setMavenLog(log);
         if (classSource == null) {
             classSource = project.getBuild().getOutputDirectory();
         }
-
-        log.info("Enhancing classes ...");
 
         File f = new File("");
         log.info("Current Directory: " + f.getAbsolutePath());
@@ -98,6 +98,7 @@ public class AmebaMojo extends AbstractMojo {
 
         Enhancing.loadEnhancers((Map) properties);
 
+        log.info("Enhancing classes ...");
         process("", true);
         Thread.currentThread().setContextClassLoader(oldClassLoader);
     }
