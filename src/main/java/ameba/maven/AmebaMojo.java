@@ -177,10 +177,12 @@ public class AmebaMojo extends AbstractMojo {
                 enhance(enhancer, desc);
             }
         }
-        try {
-            FileUtils.writeByteArrayToFile(desc.classFile.getAbsoluteFile(), desc.enhancedByteCode);
-        } catch (IOException e) {
-            getLog().error(e);
+        if (desc.enhancedByteCode != null) {
+            try {
+                FileUtils.writeByteArrayToFile(desc.classFile.getAbsoluteFile(), desc.enhancedByteCode);
+            } catch (IOException e) {
+                getLog().error(e);
+            }
         }
     }
 
