@@ -116,25 +116,26 @@ public class AmebaMojo extends AbstractMojo {
         File[] files = d.listFiles();
         File f = null;
         try {
-            for (File file : files) {
-                f = file;
-                if (file.isDirectory()) {
-                    if (recurse) {
-                        String subdir = dir + "/" + file.getName();
-                        process(subdir, recurse);
-                    }
-                } else {
-                    String fileName = file.getName();
-                    if (fileName.endsWith(".java")) {
-                        // possibly a common mistake... mixing .java and .class
-                        getLog().debug("Expecting a .class file but got " + fileName + " ... ignoring");
+            if (files != null)
+                for (File file : files) {
+                    f = file;
+                    if (file.isDirectory()) {
+                        if (recurse) {
+                            String subdir = dir + "/" + file.getName();
+                            process(subdir, true);
+                        }
+                    } else {
+                        String fileName = file.getName();
+                        if (fileName.endsWith(".java")) {
+                            // possibly a common mistake... mixing .java and .class
+                            getLog().debug("Expecting a .class file but got " + fileName + " ... ignoring");
 
-                    } else if (fileName.endsWith(".class")) {
-                        String name = file.getPath().substring(classSource.length());
-                        transformFile(name);
+                        } else if (fileName.endsWith(".class")) {
+                            String name = file.getPath().substring(classSource.length());
+                            transformFile(name);
+                        }
                     }
                 }
-            }
 
         } catch (Exception e) {
             String fileName = f == null ? "null" : f.getName();
@@ -163,22 +164,23 @@ public class AmebaMojo extends AbstractMojo {
         } catch (IOException e) {
             throw new EnhancingException(e);
         }
-        if (clazz.isInterface()
+        if (!(desc.getEnhancedClassFile().exists()
+                || clazz.isInterface()
                 || clazz.getName().endsWith(".package")
                 || clazz.isEnum()
                 || clazz.isFrozen()
                 || clazz.isPrimitive()
                 || clazz.isAnnotation()
-                || clazz.isArray()) {
-            return;
-        }
-        for (Enhancer enhancer : Enhancing.getEnhancers()) {
-            enhance(enhancer, desc);
-            try {
-                FileUtils.writeByteArrayToFile(desc.classFile.getAbsoluteFile(), desc.enhancedByteCode);
-            } catch (IOException e) {
-                getLog().error(e);
+                || clazz.isArray())) {
+
+            for (Enhancer enhancer : Enhancing.getEnhancers()) {
+                enhance(enhancer, desc);
             }
+        }
+        try {
+            FileUtils.writeByteArrayToFile(desc.classFile.getAbsoluteFile(), desc.enhancedByteCode);
+        } catch (IOException e) {
+            getLog().error(e);
         }
     }
 
