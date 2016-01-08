@@ -2,11 +2,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.amebastack.maven</groupId>
-    <artifactId>ameba-maven</artifactId>
+    <artifactId>ameba-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
-    <version>0.1.7-SNAPSHOT</version>
-    <name>Ameba-Maven</name>
-    <description>Ameba Maven Mojo</description>
+    <version>0.1.8-SNAPSHOT</version>
+    <name>Ameba-Maven-Plugin</name>
+    <description>Ameba Maven Plugin</description>
 
     <url>http://amebastack.org</url>
     <inceptionYear>2015</inceptionYear>
@@ -14,7 +14,7 @@
     <licenses>
         <license>
             <name>MIT</name>
-            <url>https://raw.githubusercontent.com/icode/ameba-maven/master/LICENSE</url>
+            <url>https://raw.githubusercontent.com/icode/ameba-maven-plugin/master/LICENSE</url>
             <distribution>repo</distribution>
             <comments>The MIT License (MIT)</comments>
         </license>
@@ -22,13 +22,13 @@
 
     <scm>
         <url>https://github.com/icode/ameba-maven</url>
-        <connection>scm:git:https://github.com/icode/ameba-maven.git</connection>
-        <developerConnection>scm:git:git@github.com:icode/ameba-maven.git</developerConnection>
+        <connection>scm:git:https://github.com/icode/ameba-maven-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:icode/ameba-maven-plugin.git</developerConnection>
     </scm>
 
     <issueManagement>
         <system>github</system>
-        <url>https://github.com/icode/ameba-maven/issues</url>
+        <url>https://github.com/icode/ameba-maven-plugin/issues</url>
     </issueManagement>
 
     <developers>
@@ -54,11 +54,6 @@
                             <execution>
                                 <id>sign-artifacts</id>
                                 <phase>verify</phase>
-                                <configuration>
-                                    <gpgArguments>
-                                        <argument>--no-tty</argument>
-                                    </gpgArguments>
-                                </configuration>
                                 <goals>
                                     <goal>sign</goal>
                                 </goals>
@@ -210,7 +205,7 @@
     </dependencies>
     <properties>
         <ameba.dev.version>0.1.7-SNAPSHOT</ameba.dev.version>
-        <ameba.version>0.1.7-SNAPSHOT</ameba.version>
+        <ameba.version>0.1.8-SNAPSHOT</ameba.version>
         <additionalparam>-Xdoclint:none</additionalparam>
     </properties>
 </project>
