@@ -204,7 +204,7 @@
         </dependency>
     </dependencies>
     <properties>
-        <ameba.dev.version>0.1.7-SNAPSHOT</ameba.dev.version>
+        <ameba.dev.version>0.1.8-SNAPSHOT</ameba.dev.version>
         <ameba.version>0.1.8-SNAPSHOT</ameba.version>
         <additionalparam>-Xdoclint:none</additionalparam>
     </properties>
