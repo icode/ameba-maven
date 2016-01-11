@@ -240,7 +240,7 @@ public class AmebaMojo extends AbstractMojo {
 
     private class MojoClassLoader extends ReloadClassLoader {
 
-        protected MojoClassLoader(ClassLoader parent, File pkgRoot) {
+        public MojoClassLoader(ClassLoader parent, File pkgRoot) {
             super(parent, pkgRoot);
         }
 
