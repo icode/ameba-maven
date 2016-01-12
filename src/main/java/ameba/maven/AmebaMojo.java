@@ -6,6 +6,8 @@ import ameba.dev.classloading.ClassDescription;
 import ameba.dev.classloading.ReloadClassLoader;
 import ameba.dev.classloading.enhancers.Enhancer;
 import ameba.dev.classloading.enhancers.EnhancingException;
+import ameba.dev.info.MavenProjects;
+import ameba.dev.info.ProjectInfo;
 import ameba.util.ClassUtils;
 import com.google.common.collect.Sets;
 import javassist.ClassPool;
@@ -78,9 +80,8 @@ public class AmebaMojo extends AbstractMojo {
         ClassLoader oldClassLoader = ClassUtils.getContextClassLoader();
         File sourceDir = new File(project.getBuild().getSourceDirectory()).getAbsoluteFile();
         log.debug("Java source Directory: " + sourceDir);
-        classLoader = buildClassLoader(sourceDir);
+        classLoader = buildClassLoader();
         log.debug("ReloadClassLoader ClassPath: [" + StringUtils.join(classLoader.getURLs(), LINE_SEPARATOR) + "]");
-        log.debug("ClassCache SourceDirectories: [" + StringUtils.join(classLoader.getClassCache().getSourceDirectories(), LINE_SEPARATOR) + "]");
 
         Thread.currentThread().setContextClassLoader(classLoader);
 
@@ -211,10 +212,11 @@ public class AmebaMojo extends AbstractMojo {
         }
     }
 
-    private ReloadClassLoader buildClassLoader(File pkgRoot) {
+    private ReloadClassLoader buildClassLoader() {
         URL[] urls = buildClassPath();
         ClassLoader loader = URLClassLoader.newInstance(urls, Thread.currentThread().getContextClassLoader());
-        return new MojoClassLoader(loader, pkgRoot);
+        MavenProjects.load();
+        return new MojoClassLoader(loader, ProjectInfo.root());
     }
 
     private URL[] buildClassPath() {
@@ -240,8 +242,8 @@ public class AmebaMojo extends AbstractMojo {
     }
 
     private class MojoClassLoader extends ReloadClassLoader {
-        public MojoClassLoader(ClassLoader parent, File sourceDirectory) {
-            super(parent, sourceDirectory);
+        public MojoClassLoader(ClassLoader parent, ProjectInfo projectInfo) {
+            super(parent, projectInfo);
         }
 
         @Override
