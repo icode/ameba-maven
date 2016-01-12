@@ -36,6 +36,7 @@ import java.util.Set;
  * @execute phase="process-classes"
  */
 public class AmebaMojo extends AbstractMojo {
+    private static final String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
     /**
      * The maven project.
      *
@@ -72,10 +73,15 @@ public class AmebaMojo extends AbstractMojo {
             classSource = project.getBuild().getOutputDirectory();
         }
 
-        File f = new File("");
+        File f = project.getBasedir();
         log.info("Current Directory: " + f.getAbsolutePath());
         ClassLoader oldClassLoader = ClassUtils.getContextClassLoader();
-        classLoader = buildClassLoader(new File(project.getBuild().getSourceDirectory()).getAbsoluteFile());
+        File sourceDir = new File(project.getBuild().getSourceDirectory()).getAbsoluteFile();
+        log.debug("Java source Directory: " + sourceDir);
+        classLoader = buildClassLoader(sourceDir);
+        log.debug("ReloadClassLoader ClassPath: [" + StringUtils.join(classLoader.getURLs(), LINE_SEPARATOR) + "]");
+        log.debug("ClassCache SourceDirectories: [" + StringUtils.join(classLoader.getClassCache().getSourceDirectories(), LINE_SEPARATOR) + "]");
+
         Thread.currentThread().setContextClassLoader(classLoader);
 
         Properties properties = Application.readDefaultConfig();
@@ -101,6 +107,7 @@ public class AmebaMojo extends AbstractMojo {
         log.info("Enhancing classes ...");
         process("", true);
         Thread.currentThread().setContextClassLoader(oldClassLoader);
+        log.info("Enhanced classes done");
     }
 
     private void process(String dir, boolean recurse) {
@@ -113,10 +120,11 @@ public class AmebaMojo extends AbstractMojo {
             throw new RuntimeException(m);
         }
 
+        getLog().debug("List file in [" + d.getAbsolutePath() + "]");
         File[] files = d.listFiles();
         File f = null;
         try {
-            if (files != null)
+            if (files != null) {
                 for (File file : files) {
                     f = file;
                     if (file.isDirectory()) {
@@ -136,7 +144,9 @@ public class AmebaMojo extends AbstractMojo {
                         }
                     }
                 }
-
+            } else {
+                getLog().debug("cannot find file in [" + d.getAbsolutePath() + "]");
+            }
         } catch (Exception e) {
             String fileName = f == null ? "null" : f.getName();
             String m = "Error transforming file " + fileName;
@@ -146,6 +156,7 @@ public class AmebaMojo extends AbstractMojo {
     }
 
     private void transformFile(String file) {
+        getLog().debug("transformFile [" + file + "]");
         if (file.startsWith(File.separator)) {
             file = file.substring(1);
         }
@@ -179,6 +190,7 @@ public class AmebaMojo extends AbstractMojo {
         }
         if (desc.enhancedByteCode != null) {
             try {
+                getLog().debug("Write class file [" + desc.classFile.getAbsolutePath() + "]");
                 FileUtils.writeByteArrayToFile(desc.classFile.getAbsoluteFile(), desc.enhancedByteCode);
             } catch (IOException e) {
                 getLog().error(e);
@@ -200,7 +212,6 @@ public class AmebaMojo extends AbstractMojo {
     }
 
     private ReloadClassLoader buildClassLoader(File pkgRoot) {
-
         URL[] urls = buildClassPath();
         ClassLoader loader = URLClassLoader.newInstance(urls, Thread.currentThread().getContextClassLoader());
         return new MojoClassLoader(loader, pkgRoot);
@@ -219,7 +230,7 @@ public class AmebaMojo extends AbstractMojo {
                 urls.add(a.getFile().toURI().toURL());
             }
 
-            getLog().debug("ClassPath URLs: " + urls);
+            getLog().debug("Root ClassPath: [" + StringUtils.join(urls, LINE_SEPARATOR) + "]");
 
             return urls.toArray(new URL[urls.size()]);
 
@@ -228,20 +239,9 @@ public class AmebaMojo extends AbstractMojo {
         }
     }
 
-    private static class MavenApp extends Application {
-        public MavenApp() {
-        }
-
-        @Override
-        protected void addOnSetup(Map<String, Object> configMap) {
-            super.addOnSetup(configMap);
-        }
-    }
-
     private class MojoClassLoader extends ReloadClassLoader {
-
-        public MojoClassLoader(ClassLoader parent, File pkgRoot) {
-            super(parent, pkgRoot);
+        public MojoClassLoader(ClassLoader parent, File sourceDirectory) {
+            super(parent, sourceDirectory);
         }
 
         @Override
