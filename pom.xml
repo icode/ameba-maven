@@ -4,7 +4,7 @@
     <groupId>org.amebastack.maven</groupId>
     <artifactId>ameba-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
-    <version>0.1.8-SNAPSHOT</version>
+    <version>0.1.8</version>
     <name>Ameba-Maven-Plugin</name>
     <description>Ameba Maven Plugin</description>
 
@@ -204,8 +204,8 @@
         </dependency>
     </dependencies>
     <properties>
-        <ameba.dev.version>0.1.8-SNAPSHOT</ameba.dev.version>
-        <ameba.version>0.1.8-SNAPSHOT</ameba.version>
+        <ameba.dev.version>0.1.8</ameba.dev.version>
+        <ameba.version>0.1.8</ameba.version>
         <additionalparam>-Xdoclint:none</additionalparam>
     </properties>
 </project>
