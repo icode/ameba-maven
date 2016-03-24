@@ -149,11 +149,13 @@ public class AmebaMojo extends AbstractMojo {
                 getLog().debug("cannot find file in [" + d.getAbsolutePath() + "]");
             }
         } catch (Exception e) {
-            String fileName = f == null ? "null" : f.getName();
-            String m = "Error transforming file " + fileName;
-            throw new RuntimeException(m, e);
+            if (f != null && f.isFile()) {
+                String m = "Error transforming file " + f.getPath();
+                throw new RuntimeException(m, e);
+            } else {
+                throw e;
+            }
         }
-
     }
 
     private void transformFile(String file) {
