@@ -4,7 +4,7 @@
     <groupId>org.amebastack.maven</groupId>
     <artifactId>ameba-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
-    <version>0.1.10-SNAPSHOT</version>
+    <version>0.1.10</version>
     <name>Ameba-Maven-Plugin</name>
     <description>Ameba Maven Plugin</description>
 
@@ -209,7 +209,7 @@
         </dependency>
     </dependencies>
     <properties>
-        <ameba.dev.version>0.1.10-SNAPSHOT</ameba.dev.version>
-        <ameba.version>0.1.10-SNAPSHOT</ameba.version>
+        <ameba.dev.version>0.1.10</ameba.dev.version>
+        <ameba.version>0.1.10</ameba.version>
     </properties>
 </project>
