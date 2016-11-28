@@ -58,12 +58,6 @@ public class AmebaMojo extends AbstractMojo {
      * @parameter
      */
     private String[] ids;
-    /**
-     * Set the read application config file.
-     *
-     * @parameter
-     */
-    private boolean readAppConf = false;
     private ReloadClassLoader classLoader;
 
     @SuppressWarnings("unchecked")
@@ -86,13 +80,11 @@ public class AmebaMojo extends AbstractMojo {
         Thread.currentThread().setContextClassLoader(classLoader);
 
         Properties properties = Application.readDefaultConfig();
-        if (readAppConf) {
-            Application.readAppConfig(properties, Application.DEFAULT_APP_CONF);
-            if (ids != null && ids.length > 0) {
-                Set<String> configFiles = Application.parseIds2ConfigFile(ids);
-                for (String conf : configFiles) {
-                    Application.readAppConfig(properties, conf);
-                }
+        Application.readAppConfig(properties, Application.DEFAULT_APP_CONF);
+        if (ids != null && ids.length > 0) {
+            Set<String> configFiles = Application.parseIds2ConfigFile(ids);
+            for (String conf : configFiles) {
+                Application.readAppConfig(properties, conf);
             }
         }
 
