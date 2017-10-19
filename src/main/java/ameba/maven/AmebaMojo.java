@@ -54,11 +54,11 @@ public class AmebaMojo extends AbstractMojo {
      */
     private String classSource;
     /**
-     * Set the directory holding the class files we want to transform.
+     * config file path
      *
-     * @parameter default-value="${project.build.directory}/generated-sources/ameba"
+     * @parameter default-value="${project.build.directory}/ameba"
      */
-    private File confDir;
+    private File confDirectory;
     /**
      * Set the application config ids.
      *
@@ -68,8 +68,7 @@ public class AmebaMojo extends AbstractMojo {
     private ReloadClassLoader classLoader;
 
     @SuppressWarnings("unchecked")
-    public void execute()
-            throws MojoExecutionException {
+    public void execute() throws MojoExecutionException {
         final Log log = getLog();
         StaticLoggerBinder.getSingleton().setMavenLog(log);
         if (classSource == null) {
@@ -236,7 +235,7 @@ public class AmebaMojo extends AbstractMojo {
 
             URL projectOut = new File(project.getBuild().getOutputDirectory()).toURI().toURL();
             urls.add(projectOut);
-            urls.add(confDir.toURI().toURL());
+            urls.add(confDirectory.toURI().toURL());
 
             Set<Artifact> artifacts = project.getArtifacts();
 
