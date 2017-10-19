@@ -4,6 +4,7 @@ import ameba.core.Application;
 import ameba.dev.Enhancing;
 import ameba.dev.classloading.ClassDescription;
 import ameba.dev.classloading.ReloadClassLoader;
+import ameba.dev.classloading.enhancers.Enhanced;
 import ameba.dev.classloading.enhancers.Enhancer;
 import ameba.dev.classloading.enhancers.EnhancingException;
 import ameba.dev.info.MavenProjects;
@@ -53,6 +54,12 @@ public class AmebaMojo extends AbstractMojo {
      */
     private String classSource;
     /**
+     * Set the directory holding the class files we want to transform.
+     *
+     * @parameter default-value="${project.build.directory}/generated-sources/ameba"
+     */
+    private File confDir;
+    /**
      * Set the application config ids.
      *
      * @parameter
@@ -87,6 +94,12 @@ public class AmebaMojo extends AbstractMojo {
                 Application.readAppConfig(properties, conf);
             }
         }
+
+        properties.stringPropertyNames().forEach(key -> {
+            if (key.startsWith("env.")) {
+                System.setProperty(key.substring(4), properties.getProperty(key));
+            }
+        });
 
         Application.readModuleConfig(properties, false);
 
@@ -171,10 +184,13 @@ public class AmebaMojo extends AbstractMojo {
             throw new EnhancingException(e);
         }
         if (!(desc.getEnhancedClassFile().exists()
+                || clazz.hasAnnotation(Enhanced.class)
                 || clazz.isInterface()
                 || clazz.getName().endsWith(".package")
+                || clazz.getName().startsWith("jdk.")
+                || clazz.getName().startsWith("java.")
+                || clazz.getName().startsWith("javax.")
                 || clazz.isEnum()
-                || clazz.isFrozen()
                 || clazz.isPrimitive()
                 || clazz.isAnnotation()
                 || clazz.isArray())) {
@@ -183,6 +199,7 @@ public class AmebaMojo extends AbstractMojo {
                 enhance(enhancer, desc);
             }
         }
+
         if (desc.enhancedByteCode != null) {
             try {
                 getLog().debug("Write class file [" + desc.classFile.getAbsolutePath() + "]");
@@ -219,6 +236,7 @@ public class AmebaMojo extends AbstractMojo {
 
             URL projectOut = new File(project.getBuild().getOutputDirectory()).toURI().toURL();
             urls.add(projectOut);
+            urls.add(confDir.toURI().toURL());
 
             Set<Artifact> artifacts = project.getArtifacts();
 
